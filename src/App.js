@@ -1,29 +1,5 @@
 import { useEffect, useState } from 'react';
 
-const tempMovieData = [
-  {
-    imdbID: 'tt15398776',
-    Title: 'Oppenheimer',
-    Year: '2013',
-    Poster:
-      'https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_SX300.jpg',
-  },
-  {
-    imdbID: 'tt1517268',
-    Title: 'Barbie',
-    Year: '2023',
-    Poster:
-      'https://m.media-amazon.com/images/M/MV5BNjU3N2QxNzYtMjk1NC00MTc4LTk1NTQtMmUxNTljM2I0NDA5XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_SX300.jpg',
-  },
-  {
-    imdbID: 'tt8589698',
-    Title: 'Teenage Mutant Ninja Turtles: Mutant Mayhem',
-    Year: '2023',
-    Poster:
-      'https://m.media-amazon.com/images/M/MV5BYzE4MTllZTktMTIyZS00Yzg1LTg1YzAtMWQwZTZkNjNkODNjXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_SX300.jpg',
-  },
-];
-
 const tempWatchedData = [
   {
     imdbID: 'tt15398776',
@@ -176,7 +152,7 @@ function Main({ children }) {
   return <main className='main'>{children}</main>;
 }
 
-function BoxMovies({ element }) {
+function BoxMovies({ children }) {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -184,7 +160,7 @@ function BoxMovies({ element }) {
       <button className='btn-toggle' onClick={() => setIsOpen((open) => !open)}>
         {isOpen ? '–' : '+'}
       </button>
-      {isOpen && element}
+      {isOpen && children}
     </div>
   );
 }
@@ -199,22 +175,50 @@ function Loader() {
   );
 }
 
+function Error({ message }) {
+  return (
+    <div className='error'>
+      <span>⛔</span>
+      {message}
+    </div>
+  );
+}
+
 const API_KEY = '72ef0764';
 
 export default function App() {
-  const [movies, setMovies] = useState(tempMovieData);
+  const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState(tempWatchedData);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     async function fetchMovies() {
-      setIsLoading(true);
-      const res = await fetch(
-        `https://www.omdbapi.com/?apikey=${API_KEY}&s=batman`
-      );
-      const data = await res.json();
-      setMovies(data.Search);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${API_KEY}&s=sdgsdga`
+        );
+
+        const data = await res.json();
+
+        if (data.Response === 'False') {
+          throw new Error(data.Error);
+        }
+
+        if (data.Error) {
+          throw new Error(data.Error);
+        }
+        console.log(data);
+
+        setMovies(data.Search);
+        setIsLoading(false);
+      } catch (err) {
+        console.log(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchMovies();
   }, []);
@@ -227,18 +231,16 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <BoxMovies
-          element={isLoading ? <Loader /> : <MovieList movies={movies} />}
-        />
+        <BoxMovies>
+          {isLoading && <Loader />}
+          {error && <Error message={error} />}
+          {!isLoading && !error && <MovieList movies={movies} />}
+        </BoxMovies>
 
-        <BoxMovies
-          element={
-            <>
-              <WatchedSummary watched={watched} />
-              <MovieWatched watched={watched} />
-            </>
-          }
-        />
+        <BoxMovies>
+          <WatchedSummary watched={watched} />
+          <MovieWatched watched={watched} />
+        </BoxMovies>
       </Main>
     </>
   );
