@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const tempMovieData = [
   {
@@ -189,9 +189,35 @@ function BoxMovies({ element }) {
   );
 }
 
+function Loader() {
+  return (
+    <div className='loader'>
+      <div className='loading-bar'>
+        <div className='bar'></div>
+      </div>
+    </div>
+  );
+}
+
+const API_KEY = '72ef0764';
+
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchMovies() {
+      setIsLoading(true);
+      const res = await fetch(
+        `https://www.omdbapi.com/?apikey=${API_KEY}&s=batman`
+      );
+      const data = await res.json();
+      setMovies(data.Search);
+      setIsLoading(false);
+    }
+    fetchMovies();
+  }, []);
 
   return (
     <>
@@ -201,7 +227,9 @@ export default function App() {
         <NumResults movies={movies} />
       </NavBar>
       <Main>
-        <BoxMovies element={<MovieList movies={movies} />} />
+        <BoxMovies
+          element={isLoading ? <Loader /> : <MovieList movies={movies} />}
+        />
 
         <BoxMovies
           element={
