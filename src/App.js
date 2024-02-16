@@ -1,5 +1,29 @@
 import { useEffect, useState } from 'react';
 
+const tempMovieData = [
+  {
+    imdbID: 'tt15398776',
+    Title: 'Oppenheimer',
+    Year: '2013',
+    Poster:
+      'https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_SX300.jpg',
+  },
+  {
+    imdbID: 'tt1517268',
+    Title: 'Barbie',
+    Year: '2023',
+    Poster:
+      'https://m.media-amazon.com/images/M/MV5BNjU3N2QxNzYtMjk1NC00MTc4LTk1NTQtMmUxNTljM2I0NDA5XkEyXkFqcGdeQXVyODE5NzE3OTE@._V1_SX300.jpg',
+  },
+  {
+    imdbID: 'tt8589698',
+    Title: 'Teenage Mutant Ninja Turtles: Mutant Mayhem',
+    Year: '2023',
+    Poster:
+      'https://m.media-amazon.com/images/M/MV5BYzE4MTllZTktMTIyZS00Yzg1LTg1YzAtMWQwZTZkNjNkODNjXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_SX300.jpg',
+  },
+];
+
 const tempWatchedData = [
   {
     imdbID: 'tt15398776',
@@ -30,14 +54,13 @@ function Logo() {
   return (
     <div className='logo'>
       <span role='img'>🎫</span>
-      <h1>MyLix</h1>
+      <h1>Movie</h1>
     </div>
   );
 }
 
 function Search() {
   const [query, setQuery] = useState('');
-
   return (
     <input
       className='search'
@@ -55,6 +78,10 @@ function NumResults({ movies }) {
       Found <strong>{movies?.length}</strong> results
     </p>
   );
+}
+
+function NavBar({ children }) {
+  return <nav className='nav-bar'>{children}</nav>;
 }
 
 function MovieItem({ movie }) {
@@ -134,7 +161,7 @@ function WatchedItem({ movie }) {
   );
 }
 
-function MovieWatched({ watched }) {
+function WatchedList({ watched }) {
   return (
     <ul className='list'>
       {watched.map((movie, index) => (
@@ -144,17 +171,8 @@ function MovieWatched({ watched }) {
   );
 }
 
-function NavBar({ children }) {
-  return <nav className='nav-bar'>{children}</nav>;
-}
-
-function Main({ children }) {
-  return <main className='main'>{children}</main>;
-}
-
 function BoxMovies({ children }) {
   const [isOpen, setIsOpen] = useState(true);
-
   return (
     <div className='box'>
       <button className='btn-toggle' onClick={() => setIsOpen((open) => !open)}>
@@ -163,6 +181,10 @@ function BoxMovies({ children }) {
       {isOpen && children}
     </div>
   );
+}
+
+function Main({ children }) {
+  return <main className='main'>{children}</main>;
 }
 
 function Loader() {
@@ -175,16 +197,15 @@ function Loader() {
   );
 }
 
-function Error({ message }) {
+function ErrorMessage({ message }) {
   return (
     <div className='error'>
-      <span>⛔</span>
-      {message}
+      <span>⛔</span> {message}
     </div>
   );
 }
 
-const API_KEY = '72ef0764';
+const API_KEY = '964fbde3';
 
 export default function App() {
   const [movies, setMovies] = useState([]);
@@ -192,35 +213,33 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const query = 'sdfsdfwdg';
+
   useEffect(() => {
-    async function fetchMovies() {
+    async function fetchMovie() {
       try {
         setIsLoading(true);
         const res = await fetch(
-          `https://www.omdbapi.com/?apikey=${API_KEY}&s=sdgsdga`
+          `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
         );
+
+        if (!res.ok) throw new Error('Something went wrong');
 
         const data = await res.json();
 
-        if (data.Response === 'False') {
-          throw new Error(data.Error);
-        }
+        if (data.Response === 'False') throw new Error(data.Error);
 
-        if (data.Error) {
-          throw new Error(data.Error);
-        }
         console.log(data);
 
         setMovies(data.Search);
-        setIsLoading(false);
       } catch (err) {
-        console.log(err.message);
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     }
-    fetchMovies();
+
+    fetchMovie();
   }, []);
 
   return (
@@ -233,13 +252,12 @@ export default function App() {
       <Main>
         <BoxMovies>
           {isLoading && <Loader />}
-          {error && <Error message={error} />}
+          {error && <ErrorMessage message={error} />}
           {!isLoading && !error && <MovieList movies={movies} />}
         </BoxMovies>
-
         <BoxMovies>
           <WatchedSummary watched={watched} />
-          <MovieWatched watched={watched} />
+          <WatchedList watched={watched} />
         </BoxMovies>
       </Main>
     </>
