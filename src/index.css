@@ -142,6 +142,11 @@ body {
   overflow: hidden;
 }
 
+.list-movies {
+  overflow-y: auto;
+  height: calc(100% - 9rem);
+}
+
 .list-watched {
   height: calc(100% - 9rem);
 }
