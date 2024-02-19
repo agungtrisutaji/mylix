@@ -140,15 +140,12 @@ body {
   list-style: none;
   padding: 0.8rem 0;
   overflow: hidden;
+  overflow-y: auto;
+  height: calc(80%);
 }
 
 .list-movies {
-  overflow-y: auto;
-  height: calc(100% - 9rem);
-}
-
-.list-watched {
-  height: calc(100% - 9rem);
+  height: calc(100%);
 }
 
 .list li {
@@ -247,6 +244,8 @@ body {
 
 .details {
   line-height: 1.4;
+  overflow-y: auto;
+  height: calc(100%);
   font-size: 1.4rem;
 }
 
